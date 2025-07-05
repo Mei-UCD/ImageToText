@@ -6,7 +6,7 @@ import os
 #from surya.recognition import RecognitionPredictor
 #from surya.detection import DetectionPredictor
 #from paddleocr import PaddleOCR
-#import easyocr
+import easyocr
 import torch
 
 # # GPU/CPU choice
@@ -20,6 +20,8 @@ import torch
 # detection_predictor.to(device)
 # print("✅ Detection model loaded")
 
+reader = easyocr.Reader(['ja', 'en'], gpu=False)
+
 app = Flask(__name__)
 CORS(app)
 
@@ -27,8 +29,7 @@ UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER,exist_ok=True)
 
 # Assign the tesseract ocr path
-tesseract_path = os.environ.get("TESSERACT_CMD", "/usr/bin/tesseract")
-pytesseract.pytesseract.tesseract_cmd = tesseract_path
+# pytesseract.pytesseract.tesseract_cmd = r"D:\OCR\path\tesseract.exe"
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 
@@ -52,25 +53,25 @@ def ocr():
         file.save(file_path)
 
         try:
-            # Basic Tesseract OCR
-            with Image.open(file_path) as image:
-                # text = pytesseract.image_to_string(image, lang="chi_sim+jpn").strip()
-                # results[file.filename] = text if text else "No text detected"
+            # # Basic Tesseract OCR
+            # with Image.open(file_path) as image:
+            #     # text = pytesseract.image_to_string(image, lang="chi_sim+jpn").strip()
+            #     # results[file.filename] = text if text else "No text detected"
 
-                ocr_data = pytesseract.image_to_data(image, lang="chi_sim+jpn", output_type=pytesseract.Output.DICT)
-                n_boxes = len(ocr_data["text"])
-                positioned_text = []
-                for i in range(n_boxes):
-                    word = ocr_data["text"][i].strip()
-                    if word:
-                        positioned_text.append({
-                            "text": word,
-                            "x": ocr_data["left"][i],
-                            "y": ocr_data["top"][i],
-                            "width": ocr_data["width"][i],
-                            "height": ocr_data["height"][i]
-                        })
-                    results[file.filename] = positioned_text
+            #     ocr_data = pytesseract.image_to_data(image, lang="chi_sim+jpn", output_type=pytesseract.Output.DICT)
+            #     n_boxes = len(ocr_data["text"])
+            #     positioned_text = []
+            #     for i in range(n_boxes):
+            #         word = ocr_data["text"][i].strip()
+            #         if word:
+            #             positioned_text.append({
+            #                 "text": word,
+            #                 "x": ocr_data["left"][i],
+            #                 "y": ocr_data["top"][i],
+            #                 "width": ocr_data["width"][i],
+            #                 "height": ocr_data["height"][i]
+            #             })
+            #         results[file.filename] = positioned_text
             
             # # Surya OCR
             # with Image.open(file_path) as image:
@@ -93,10 +94,29 @@ def ocr():
 
 
             # EasyOCR
-            # with Image.open(file_path) as image:
-            #     result = reader.readtext(file_path)
-            #     full_text = "\n".join([text[1] for text in result])  # 提取文本
-            #     results[file.filename] = full_text if full_text else "No text detected"
+            with Image.open(file_path) as image:
+                # result = reader.readtext(file_path)
+                # full_text = "\n".join([text[1] for text in result])  # 提取文本
+                # results[file.filename] = full_text if full_text else "No text detected"
+
+                results_easyocr = reader.readtext(file_path)
+                positioned_text = []
+                for bbox, text, conf in results_easyocr:
+                    x_min = min([point[0] for point in bbox])
+                    y_min = min([point[1] for point in bbox])
+                    width = max([point[0] for point in bbox]) - x_min
+                    height = max([point[1] for point in bbox]) - y_min
+                    
+                    if text.strip():  # 过滤空文本
+                        positioned_text.append({
+                            "text": text,
+                            "x": int(x_min),
+                            "y": int(y_min),
+                            "width": int(width),
+                            "height": int(height),
+                            "confidence": round(conf, 2)
+                        })
+                results[file.filename] = positioned_text
 
             # PaddleOCR
             # result = ocr.ocr(file_path, cls=True)
