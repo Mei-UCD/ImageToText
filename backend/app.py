@@ -3,6 +3,7 @@ from flask_cors import CORS
 import pytesseract
 from PIL import Image
 import os
+import shutil
 #from surya.recognition import RecognitionPredictor
 #from surya.detection import DetectionPredictor
 #from paddleocr import PaddleOCR
@@ -27,7 +28,11 @@ UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER,exist_ok=True)
 
 # Assign the tesseract ocr path
-pytesseract.pytesseract.tesseract_cmd = r"D:\OCR\path\tesseract.exe"
+tesseract_path = shutil.which("tesseract")
+if tesseract_path:
+    pytesseract.pytesseract.tesseract_cmd = tesseract_path
+else:
+    raise EnvironmentError("Tesseract not found in PATH")
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 
