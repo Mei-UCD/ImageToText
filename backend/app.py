@@ -3,8 +3,8 @@ from flask_cors import CORS
 import pytesseract
 from PIL import Image
 import os
-#from surya.recognition import RecognitionPredictor
-#from surya.detection import DetectionPredictor
+from surya.recognition import RecognitionPredictor
+from surya.detection import DetectionPredictor
 #from paddleocr import PaddleOCR
 #import easyocr
 import torch
@@ -13,10 +13,10 @@ import torch
 # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # print(f"Using device: {device}")
 # # Initialize Surya Model
-# recognition_predictor = RecognitionPredictor()
+recognition_predictor = RecognitionPredictor()
 # recognition_predictor.to(device)
 # print("✅ Recognition model loaded")
-# detection_predictor = DetectionPredictor()
+detection_predictor = DetectionPredictor()
 # detection_predictor.to(device)
 # print("✅ Detection model loaded")
 
@@ -28,8 +28,8 @@ os.makedirs(UPLOAD_FOLDER,exist_ok=True)
 
 # Assign the tesseract ocr path
 # pytesseract.pytesseract.tesseract_cmd = r"D:\OCR\path\tesseract.exe"
-tesseract_path = os.environ.get("TESSERACT_CMD", "/usr/bin/tesseract")
-pytesseract.pytesseract.tesseract_cmd = tesseract_path
+#tesseract_path = os.environ.get("TESSERACT_CMD", "/usr/bin/tesseract")
+#pytesseract.pytesseract.tesseract_cmd = tesseract_path
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 
@@ -54,43 +54,42 @@ def ocr():
 
         try:
             # Basic Tesseract OCR
-            with Image.open(file_path) as image:
+            #with Image.open(file_path) as image:
                 # text = pytesseract.image_to_string(image, lang="chi_sim+jpn").strip()
                 # results[file.filename] = text if text else "No text detected"
 
-                ocr_data = pytesseract.image_to_data(image, lang="chi_sim+jpn", output_type=pytesseract.Output.DICT)
-                n_boxes = len(ocr_data["text"])
-                positioned_text = []
-                for i in range(n_boxes):
-                    word = ocr_data["text"][i].strip()
-                    if word:
-                        positioned_text.append({
-                            "text": word,
-                            "x": ocr_data["left"][i],
-                            "y": ocr_data["top"][i],
-                            "width": ocr_data["width"][i],
-                            "height": ocr_data["height"][i]
-                        })
-                    results[file.filename] = positioned_text
+                #ocr_data = pytesseract.image_to_data(image, lang="chi_sim+jpn", output_type=pytesseract.Output.DICT)
+                #n_boxes = len(ocr_data["text"])
+                #positioned_text = []
+                #for i in range(n_boxes):
+                    #word = ocr_data["text"][i].strip()
+                    #if word:
+                        #positioned_text.append({
+                            #"text": word,
+                            #"x": ocr_data["left"][i],
+                            #"y": ocr_data["top"][i],
+                            #"width": ocr_data["width"][i],
+                            #"height": ocr_data["height"][i]
+                        #})
+                    #results[file.filename] = positioned_text
             
             # # Surya OCR
-            # with Image.open(file_path) as image:
-            #     preds = recognition_predictor([image], [None], detection_predictor)
-            #     lines = sorted(preds[0].text_lines, key=lambda x: x.bbox[1])
-            #     full_text = "\n".join(line.text for line in lines)
-            #     # results[file.filename] = full_text
+            with Image.open(file_path) as image:
+                 preds = recognition_predictor([image], [None], detection_predictor)
+                 lines = sorted(preds[0].text_lines, key=lambda x: x.bbox[1])
+                 full_text = "\n".join(line.text for line in lines)
 
-            #     positioned_text = []
-            #     for line in lines:
-            #         result = {
-            #             "text": line.text,
-            #             "x": line.bbox[0],
-            #             "y": line.bbox[1],
-            #             "width": line.bbox[2] - line.bbox[0],
-            #             "height": line.bbox[3] - line.bbox[1]
-            #         }
-            #         positioned_text.append(result)
-            #     results[file.filename] = positioned_text
+                 positioned_text = []
+                 for line in lines:
+                     result = {
+                         "text": line.text,
+                         "x": line.bbox[0],
+                         "y": line.bbox[1],
+                         "width": line.bbox[2] - line.bbox[0],
+                         "height": line.bbox[3] - line.bbox[1]
+                     }
+                     positioned_text.append(result)
+                 results[file.filename] = positioned_text
 
 
             # EasyOCR
