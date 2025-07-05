@@ -27,7 +27,9 @@ UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER,exist_ok=True)
 
 # Assign the tesseract ocr path
-pytesseract.pytesseract.tesseract_cmd = r"D:\OCR\path\tesseract.exe"
+# pytesseract.pytesseract.tesseract_cmd = r"D:\OCR\path\tesseract.exe"
+tesseract_path = os.environ.get("TESSERACT_CMD", "/usr/bin/tesseract")
+pytesseract.pytesseract.tesseract_cmd = tesseract_path
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 
@@ -112,4 +114,6 @@ def ocr():
     return jsonify(results)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    # app.run(host="0.0.0.0", port=5000, debug=False)
+    port = int(os.getenv("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
