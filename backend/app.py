@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 #import pytesseract
-#from PIL import Image
+from PIL import Image
 import os
 #from surya.recognition import RecognitionPredictor
 #from surya.detection import DetectionPredictor
