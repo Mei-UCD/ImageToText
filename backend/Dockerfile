@@ -1,6 +1,15 @@
 # 使用轻量级 Python 镜像
 FROM python:3.10-slim
 
+# 安装 EasyOCR 和 OpenCV 所需的系统库
+RUN apt-get update && apt-get install -y \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libgl1 \
+    && rm -rf /var/lib/apt/lists/*
+
 # 设置工作目录
 WORKDIR /app
 
