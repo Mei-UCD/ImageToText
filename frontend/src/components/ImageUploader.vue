@@ -140,7 +140,7 @@ const convertFiles = async() => {
     file.loading = true;
 
     try {
-      const response = await axios.post("https://image-to-text-backend-fr5l.onrender.com/ocr", formData, {
+      const response = await axios.post("https://imagetotext-48543926178.asia-northeast1.run.app/ocr", formData, {
         headers: { "Content-Type": "multipart/form-data" },
         // onUploadProgress: (progressEvent) => {
         //   const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
