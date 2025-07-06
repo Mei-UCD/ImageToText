@@ -1,13 +1,13 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import pytesseract
-from PIL import Image
+#import pytesseract
+#from PIL import Image
 import os
 #from surya.recognition import RecognitionPredictor
 #from surya.detection import DetectionPredictor
 #from paddleocr import PaddleOCR
 import easyocr
-import torch
+#import torch
 
 # # GPU/CPU choice
 # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
